@@ -48,6 +48,7 @@ a.card{display:flex;gap:12px;align-items:flex-start;background:var(--card);borde
   <div class="tabs" id="tabs"></div>
 </div>
 <div class="meta" id="meta"></div>
+<div class="meta" id="diag" style="padding-top:0"></div>
 <div class="list" id="list"></div>
 <div class="foot">উৎস: প্রতিষ্ঠিত সংবাদ সংস্থা ও সংবাদমাধ্যম। বাংলা শিরোনাম Google News বাংলাদেশ, BBC বাংলা ও DW বাংলা থেকে। ইংরেজি সংবাদ BBC News, Reuters, AP, Al Jazeera, DW, The Guardian ও ESPN থেকে নিয়ে স্বয়ংক্রিয়ভাবে বাংলায় অনুবাদ করা হয়, নিচে মূল ইংরেজি শিরোনামও দেখানো হয়। স্বয়ংক্রিয় অনুবাদে ভুল থাকতে পারে। সামাজিক যোগাযোগমাধ্যম (Facebook, X/Twitter ইত্যাদি) থেকে কোনো খবর নেওয়া হয় না। পূর্ণ সংবাদ পড়তে শিরোনামে চাপ দিন।</div>
 
@@ -138,28 +139,37 @@ function viaRss2json(url){
     });
   });
 }
+function parseXml(txt){
+  var doc = new DOMParser().parseFromString(txt, 'text/xml');
+  var nodes = doc.querySelectorAll('item');
+  var atom = false;
+  if(!nodes.length){ nodes = doc.querySelectorAll('entry'); atom = true; }
+  if(!nodes.length) throw new Error('bad');
+  var out = [];
+  for(var i = 0; i < nodes.length; i++){
+    var n = nodes[i];
+    var te = n.querySelector('title'), le = n.querySelector('link');
+    var pe = n.querySelector('pubDate') || n.querySelector('published') || n.querySelector('updated') || n.querySelector('date');
+    var link = '';
+    if(le){ link = (atom || !le.textContent) ? (le.getAttribute('href') || le.textContent) : le.textContent; }
+    out.push({
+      title: te ? te.textContent : '',
+      link: String(link || '').trim(),
+      time: pe ? (Date.parse(pe.textContent) || 0) : 0
+    });
+  }
+  return out;
+}
+function viaDirect(url){
+  return timeout(fetch(url).then(function(r){ return r.text(); }), 9000).then(parseXml);
+}
 function viaProxy(url){
   var api = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-  return timeout(fetch(api).then(function(r){ return r.text(); }), 12000).then(function(txt){
-    var doc = new DOMParser().parseFromString(txt, 'text/xml');
-    var nodes = doc.querySelectorAll('item');
-    if(!nodes.length) throw new Error('bad');
-    var out = [];
-    for(var i = 0; i < nodes.length; i++){
-      var n = nodes[i];
-      var te = n.querySelector('title'), le = n.querySelector('link'), pe = n.querySelector('pubDate');
-      out.push({
-        title: te ? te.textContent : '',
-        link: le ? le.textContent : '',
-        time: pe ? (Date.parse(pe.textContent) || 0) : 0
-      });
-    }
-    return out;
-  });
+  return timeout(fetch(api).then(function(r){ return r.text(); }), 12000).then(parseXml);
 }
 function getFeed(f){
   var isGN = f.u.indexOf('news.google.com') > -1;
-  return viaRss2json(f.u).catch(function(){ return viaProxy(f.u); }).then(function(items){
+  return viaDirect(f.u).catch(function(){ return viaRss2json(f.u); }).catch(function(){ return viaProxy(f.u); }).then(function(items){
     var out = [];
     for(var i = 0; i < items.length; i++){
       var it = items[i];
@@ -254,6 +264,7 @@ function loadTab(i, force){
   Promise.all(tab.feeds.map(getFeed)).then(function(all){
     if(my !== token) return;
     var top = mix(all, 10);
+    showDiag(tab, all);
     if(!top.length){
       if(!cached){
         document.getElementById('meta').textContent = '';
@@ -288,6 +299,17 @@ function loadTab(i, force){
       writeCache(tab.k, { t: now, items: top });
     });
   });
+}
+
+function showDiag(tab, all){
+  var bad = [], ok = 0;
+  for(var q = 0; q < tab.feeds.length; q++){
+    if(all[q] && all[q].length){ ok++; }
+    else { bad.push(tab.feeds[q].s || (tab.feeds[q].u.indexOf('news.google.com') > -1 ? 'Google News' : 'উৎস')); }
+  }
+  var el = document.getElementById('diag');
+  if(!el) return;
+  el.textContent = 'উৎস চালু: ' + bnNum(ok) + '/' + bnNum(tab.feeds.length) + (bad.length ? ' · আনা যায়নি: ' + bad.join(', ') : '');
 }
 
 function cardHTML(it, i){
