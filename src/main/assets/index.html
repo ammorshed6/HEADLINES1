@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>আজকের শিরোনাম</title>
+<style>
+:root{--g:#0f6e50;--bg:#f5f3ee;--card:#fff;--tx:#1d1d1d;--mu:#6b6b6b;--ln:#e4e0d6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Noto Sans Bengali","Segoe UI",sans-serif}
+.hd{position:sticky;top:0;z-index:5;background:var(--g);color:#fff}
+.hd-top{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 8px;gap:8px}
+.ttl{font-size:20px;font-weight:700;line-height:1.2}
+.sub{font-size:12px;opacity:.85;margin-top:2px}
+.right{display:flex;align-items:center;gap:8px}
+.mor{background:#e01010;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border-radius:8px;white-space:nowrap}
+.rf{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;font-size:18px;width:38px;height:36px}
+.tabs{display:flex;overflow-x:auto;padding:0 8px 8px;gap:6px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:18px;padding:7px 14px;font-size:14px;font-family:inherit}
+.tab.on{background:#fff;color:var(--g);font-weight:700;border-color:#fff}
+.meta{font-size:12px;color:var(--mu);padding:10px 14px 4px}
+.list{padding:4px 12px 24px}
+a.card{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px;margin-bottom:10px;text-decoration:none;color:inherit}
+.no{flex:0 0 34px;height:34px;border-radius:50%;background:#e3f1ec;color:var(--g);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:16px}
+.body{min-width:0}
+.hl{font-size:16px;line-height:1.5;font-weight:600}
+.orig{font-size:12px;color:var(--mu);margin-top:4px;line-height:1.4;font-weight:400;direction:ltr;text-align:left}
+.ref{font-size:12px;color:var(--mu);margin-top:6px}
+.ref b{color:var(--g);font-weight:600}
+.msg{text-align:center;color:var(--mu);padding:40px 20px;line-height:1.7}
+.btn{margin-top:12px;background:var(--g);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:15px;font-family:inherit}
+.foot{font-size:11px;color:var(--mu);text-align:center;padding:0 16px 24px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="hd" id="hd">
+  <div class="hd-top">
+    <div>
+      <div class="ttl">আজকের শিরোনাম</div>
+      <div class="sub">এক ঝলকে দেশ-বিদেশের খবর</div>
+    </div>
+    <div class="right">
+      <span class="mor">@A.M.MORSHED</span>
+      <button class="rf" id="rf" type="button">⟳</button>
+    </div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</div>
+<div class="meta" id="meta"></div>
+<div class="list" id="list"></div>
+<div class="foot">উৎস: প্রতিষ্ঠিত সংবাদ সংস্থা ও সংবাদমাধ্যম। বাংলা শিরোনাম Google News বাংলাদেশ, BBC বাংলা ও DW বাংলা থেকে। ইংরেজি সংবাদ BBC News, Reuters, AP, Al Jazeera, DW, The Guardian ও ESPN থেকে নিয়ে স্বয়ংক্রিয়ভাবে বাংলায় অনুবাদ করা হয়, নিচে মূল ইংরেজি শিরোনামও দেখানো হয়। স্বয়ংক্রিয় অনুবাদে ভুল থাকতে পারে। সামাজিক যোগাযোগমাধ্যম (Facebook, X/Twitter ইত্যাদি) থেকে কোনো খবর নেওয়া হয় না। পূর্ণ সংবাদ পড়তে শিরোনামে চাপ দিন।</div>
+
+<script>
+var BN = 'hl=bn&gl=BD&ceid=BD:bn';
+var EN = 'hl=en-US&gl=US&ceid=US:en';
+function topic(t){ return 'https://news.google.com/rss/headlines/section/topic/' + t + '?' + BN; }
+function search(q){ return 'https://news.google.com/rss/search?q=' + encodeURIComponent(q) + '&' + BN; }
+function searchEn(q){ return 'https://news.google.com/rss/search?q=' + encodeURIComponent(q) + '&' + EN; }
+
+var TABS = [
+  { k: 'desh2', n: 'দেশ', feeds: [ { u: topic('NATION'), s: '' } ] },
+  { k: 'bidesh2', n: 'বিদেশ', feeds: [
+      { u: topic('WORLD'), s: '' },
+      { u: 'https://feeds.bbci.co.uk/bengali/rss.xml', s: 'BBC বাংলা' },
+      { u: 'https://rss.dw.com/xml/rss-bn-all', s: 'DW বাংলা' },
+      { u: 'https://feeds.bbci.co.uk/news/world/rss.xml', s: 'BBC News', l: 'en' },
+      { u: 'https://www.aljazeera.com/xml/rss/all.xml', s: 'Al Jazeera', l: 'en' },
+      { u: searchEn('site:reuters.com world when:1d'), s: 'Reuters', l: 'en' },
+      { u: searchEn('site:apnews.com when:1d'), s: 'Associated Press', l: 'en' },
+      { u: 'https://rss.dw.com/rdf/rss-en-all', s: 'DW', l: 'en' },
+      { u: 'https://www.theguardian.com/world/rss', s: 'The Guardian', l: 'en' } ] },
+  { k: 'rajniti2', n: 'রাজনীতি', feeds: [ { u: search('রাজনীতি when:1d'), s: '' } ] },
+  { k: 'khela2', n: 'খেলাধুলা', feeds: [
+      { u: topic('SPORTS'), s: '' },
+      { u: 'https://feeds.bbci.co.uk/sport/rss.xml', s: 'BBC Sport', l: 'en' },
+      { u: 'https://www.espn.com/espn/rss/news', s: 'ESPN', l: 'en' } ] },
+  { k: 'orthoniti2', n: 'অর্থনীতি ও ব্যাংকিং', feeds: [
+      { u: topic('BUSINESS'), s: '' },
+      { u: search('ব্যাংক বাংলাদেশ ব্যাংক when:1d'), s: '' },
+      { u: 'https://feeds.bbci.co.uk/news/business/rss.xml', s: 'BBC News', l: 'en' },
+      { u: searchEn('site:reuters.com business when:1d'), s: 'Reuters', l: 'en' },
+      { u: 'https://www.theguardian.com/business/rss', s: 'The Guardian', l: 'en' } ] }
+];
+
+var BLOCK = /(facebook|twitter|instagram|tiktok|youtube|youtu\.be|telegram|whatsapp|reddit|pinterest|linkedin|snapchat|threads\.net|medium\.com|blogspot|wordpress|quora|ফেসবুক|টুইটার|ইউটিউব|ইনস্টাগ্রাম|টিকটক)/i;
+var BLOCK_EXACT = /^(x|x\.com|x corp)$/i;
+function blocked(it){
+  var s = String(it.src || '').trim();
+  if(BLOCK_EXACT.test(s)) return true;
+  if(BLOCK.test(s)) return true;
+  var l = String(it.link || '');
+  if(/^https?:\/\/(www\.|m\.|mobile\.)?(x\.com|twitter\.com|facebook\.com|fb\.com|instagram\.com|youtube\.com|youtu\.be|t\.me|tiktok\.com)\//i.test(l)) return true;
+  return false;
+}
+
+var cur = 0;
+var token = 0;
+
+function bnNum(n){
+  var d = '০১২৩৪৫৬৭৮৯';
+  return String(n).replace(/[0-9]/g, function(c){ return d.charAt(Number(c)); });
+}
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function ago(ms){
+  if(!ms) return '';
+  var m = Math.floor((Date.now() - ms) / 60000);
+  if(m < 1) return 'এইমাত্র';
+  if(m < 60) return bnNum(m) + ' মিনিট আগে';
+  var h = Math.floor(m / 60);
+  if(h < 24) return bnNum(h) + ' ঘণ্টা আগে';
+  return bnNum(Math.floor(h / 24)) + ' দিন আগে';
+}
+function clock(ms){
+  var d = new Date(ms);
+  var h = d.getHours(), mi = d.getMinutes();
+  var ap = h >= 12 ? 'বিকাল' : 'সকাল';
+  var h12 = h % 12; if(h12 === 0) h12 = 12;
+  return bnNum(h12) + ':' + bnNum(('0' + mi).slice(-2)) + ' (' + ap + ')';
+}
+function timeout(p, ms){
+  return new Promise(function(res, rej){
+    var t = setTimeout(function(){ rej(new Error('timeout')); }, ms);
+    p.then(function(v){ clearTimeout(t); res(v); }, function(e){ clearTimeout(t); rej(e); });
+  });
+}
+
+/* ---------- ফিড আনা ---------- */
+function viaRss2json(url){
+  var api = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(url);
+  return timeout(fetch(api).then(function(r){ return r.json(); }), 12000).then(function(j){
+    if(!j || j.status !== 'ok' || !j.items || !j.items.length) throw new Error('bad');
+    return j.items.map(function(i){
+      var t = Date.parse(String(i.pubDate || '').replace(' ', 'T') + 'Z');
+      return { title: i.title, link: i.link, time: t || 0 };
+    });
+  });
+}
+function viaProxy(url){
+  var api = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+  return timeout(fetch(api).then(function(r){ return r.text(); }), 12000).then(function(txt){
+    var doc = new DOMParser().parseFromString(txt, 'text/xml');
+    var nodes = doc.querySelectorAll('item');
+    if(!nodes.length) throw new Error('bad');
+    var out = [];
+    for(var i = 0; i < nodes.length; i++){
+      var n = nodes[i];
+      var te = n.querySelector('title'), le = n.querySelector('link'), pe = n.querySelector('pubDate');
+      out.push({
+        title: te ? te.textContent : '',
+        link: le ? le.textContent : '',
+        time: pe ? (Date.parse(pe.textContent) || 0) : 0
+      });
+    }
+    return out;
+  });
+}
+function getFeed(f){
+  var isGN = f.u.indexOf('news.google.com') > -1;
+  return viaRss2json(f.u).catch(function(){ return viaProxy(f.u); }).then(function(items){
+    var out = [];
+    for(var i = 0; i < items.length; i++){
+      var it = items[i];
+      var title = String(it.title || '').trim();
+      var src = f.s;
+      if(isGN){
+        var p = title.lastIndexOf(' - ');
+        if(p > 10){
+          src = title.substring(p + 3).trim();
+          title = title.substring(0, p).trim();
+        }
+      }
+      var o = { title: title, link: it.link, time: it.time, src: src || 'অজ্ঞাত সূত্র', l: f.l === 'en' ? 'en' : 'bn' };
+      if(f.l === 'en' && f.s && isGN){ o.src = f.s; }
+      if(blocked(o)) continue;
+      out.push(o);
+    }
+    out.sort(function(a, b){ return b.time - a.time; });
+    return out;
+  }).catch(function(){ return []; });
+}
+
+/* ---------- অনুবাদ (ইংরেজি → বাংলা) ---------- */
+var TR = { map: {}, order: [] };
+(function(){
+  try {
+    var s = localStorage.getItem('hl_tr2');
+    if(s){ var o = JSON.parse(s); if(o && o.map && o.order) TR = o; }
+  } catch(e){}
+})();
+function saveTr(){
+  try {
+    while(TR.order.length > 400){ var k = TR.order.shift(); delete TR.map[k]; }
+    localStorage.setItem('hl_tr2', JSON.stringify(TR));
+  } catch(e){}
+}
+function trGoogle(t){
+  var u = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=bn&dt=t&q=' + encodeURIComponent(t);
+  return timeout(fetch(u).then(function(r){ return r.json(); }), 10000).then(function(j){
+    var s = '';
+    for(var i = 0; i < j[0].length; i++){ s += (j[0][i][0] || ''); }
+    s = s.trim();
+    if(!s) throw new Error('empty');
+    return s;
+  });
+}
+function trMyMemory(t){
+  var u = 'https://api.mymemory.translated.net/get?langpair=en|bn&q=' + encodeURIComponent(t);
+  return timeout(fetch(u).then(function(r){ return r.json(); }), 10000).then(function(j){
+    var s = j && j.responseData ? String(j.responseData.translatedText || '').trim() : '';
+    if(!s || /MYMEMORY|QUERY LENGTH|INVALID/i.test(s)) throw new Error('bad');
+    return s;
+  });
+}
+function translate(t){
+  if(TR.map[t]) return Promise.resolve(TR.map[t]);
+  return trGoogle(t).catch(function(){ return trMyMemory(t); }).then(function(s){
+    TR.map[t] = s; TR.order.push(t); return s;
+  });
+}
+
+/* ---------- ট্যাব লোড ---------- */
+function mix(all, n){
+  var out = [], seen = {}, idx = 0, more = true;
+  while(out.length < n && more){
+    more = false;
+    for(var a = 0; a < all.length && out.length < n; a++){
+      if(idx < all[a].length){
+        more = true;
+        var it = all[a][idx];
+        if(!it.title || !it.link) continue;
+        var key = it.title.toLowerCase().substring(0, 40);
+        if(seen[key]) continue;
+        seen[key] = 1;
+        out.push(it);
+      }
+    }
+    idx++;
+  }
+  out.sort(function(x, y){ return y.time - x.time; });
+  return out;
+}
+
+function loadTab(i, force){
+  var my = ++token;
+  var tab = TABS[i];
+  var cached = readCache(tab.k);
+  if(cached){ show(cached.items, cached.t, true); }
+  else { document.getElementById('list').innerHTML = '<div class="msg">শিরোনাম আনা হচ্ছে…</div>'; document.getElementById('meta').textContent = ''; }
+  if(cached && !force && (Date.now() - cached.t) < 10 * 60000) return;
+
+  Promise.all(tab.feeds.map(getFeed)).then(function(all){
+    if(my !== token) return;
+    var top = mix(all, 10);
+    if(!top.length){
+      if(!cached){
+        document.getElementById('meta').textContent = '';
+        document.getElementById('list').innerHTML = '<div class="msg">শিরোনাম আনা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।<br><button class="btn" type="button" id="retry">আবার চেষ্টা করুন</button></div>';
+        document.getElementById('retry').onclick = function(){ loadTab(cur, true); };
+      }
+      return;
+    }
+    var now = Date.now();
+    var pending = [];
+    for(var n = 0; n < top.length; n++){
+      var it = top[n];
+      if(it.l === 'en'){
+        if(TR.map[it.title]){ it.bn = TR.map[it.title]; }
+        else { it.pend = true; pending.push(n); }
+      }
+    }
+    show(top, now, false);
+    if(!pending.length){ writeCache(tab.k, { t: now, items: top }); return; }
+    var jobs = pending.map(function(idx){
+      var item = top[idx];
+      return translate(item.title).then(function(s){ item.bn = s; }, function(){ }).then(function(){
+        item.pend = false;
+        if(my === token){
+          var el = document.getElementById('c' + idx);
+          if(el){ el.outerHTML = cardHTML(item, idx); }
+        }
+      });
+    });
+    Promise.all(jobs).then(function(){
+      saveTr();
+      writeCache(tab.k, { t: now, items: top });
+    });
+  });
+}
+
+function cardHTML(it, i){
+  var main = it.title, sub = '', note = '';
+  if(it.l === 'en'){
+    if(it.bn){
+      main = it.bn;
+      sub = '<div class="orig">' + esc(it.title) + '</div>';
+      note = ' · স্বয়ংক্রিয় অনুবাদ';
+    } else if(it.pend){
+      sub = '<div class="orig">অনুবাদ হচ্ছে…</div>';
+    } else {
+      note = ' · ইংরেজি (অনুবাদ পাওয়া যায়নি)';
+    }
+  }
+  return '<a class="card" id="c' + i + '" href="' + esc(it.link) + '">'
+    + '<div class="no">' + bnNum(i + 1) + '</div>'
+    + '<div class="body"><div class="hl">' + esc(main) + '</div>' + sub
+    + '<div class="ref">সূত্র: <b>' + esc(it.src) + '</b>' + (it.time ? ' · ' + ago(it.time) : '') + note + '</div></div>'
+    + '</a>';
+}
+
+function show(items, t, old){
+  var h = '';
+  for(var i = 0; i < items.length; i++){ h += cardHTML(items[i], i); }
+  document.getElementById('list').innerHTML = h;
+  document.getElementById('meta').textContent = 'সর্বশেষ হালনাগাদ: ' + clock(t) + (old ? ' (সংরক্ষিত, নতুন আনা হচ্ছে…)' : '');
+}
+
+function readCache(k){
+  try { var s = localStorage.getItem('hl_' + k); return s ? JSON.parse(s) : null; } catch(e){ return null; }
+}
+function writeCache(k, v){
+  try { localStorage.setItem('hl_' + k, JSON.stringify(v)); } catch(e){}
+}
+
+function buildTabs(){
+  var h = '';
+  for(var i = 0; i < TABS.length; i++){
+    h += '<button type="button" class="tab' + (i === cur ? ' on' : '') + '" data-i="' + i + '">' + TABS[i].n + '</button>';
+  }
+  var box = document.getElementById('tabs');
+  box.innerHTML = h;
+  var bs = box.querySelectorAll('.tab');
+  for(var j = 0; j < bs.length; j++){
+    bs[j].onclick = function(){
+      cur = Number(this.getAttribute('data-i'));
+      buildTabs();
+      window.scrollTo(0, 0);
+      loadTab(cur, false);
+    };
+  }
+}
+
+document.getElementById('rf').onclick = function(){ loadTab(cur, true); };
+buildTabs();
+loadTab(cur, false);
+</script>
+</body>
+</html>
