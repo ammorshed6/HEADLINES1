@@ -28,6 +28,7 @@ a.card{display:flex;gap:12px;align-items:flex-start;background:var(--card);borde
 .orig{font-size:12px;color:var(--mu);margin-top:4px;line-height:1.4;font-weight:400;direction:ltr;text-align:left}
 .ref{font-size:12px;color:var(--mu);margin-top:6px}
 .ref b{color:var(--g);font-weight:600}
+.sl{display:inline-block;margin:4px;padding:8px 14px;border:1px solid var(--g);border-radius:18px;color:var(--g);text-decoration:none;font-size:14px;background:#fff}
 .msg{text-align:center;color:var(--mu);padding:40px 20px;line-height:1.7}
 .btn{margin-top:12px;background:var(--g);color:#fff;border:0;border-radius:10px;padding:10px 20px;font-size:15px;font-family:inherit}
 .foot{font-size:11px;color:var(--mu);text-align:center;padding:0 16px 24px;line-height:1.7}
@@ -50,7 +51,7 @@ a.card{display:flex;gap:12px;align-items:flex-start;background:var(--card);borde
 <div class="meta" id="meta"></div>
 <div class="meta" id="diag" style="padding-top:0"></div>
 <div class="list" id="list"></div>
-<div class="foot">উৎস: প্রতিষ্ঠিত সংবাদ সংস্থা ও সংবাদমাধ্যম। বাংলা শিরোনাম Google News বাংলাদেশ, BBC বাংলা ও DW বাংলা থেকে। ইংরেজি সংবাদ BBC News, Reuters, AP, Al Jazeera, DW, The Guardian ও ESPN থেকে নিয়ে স্বয়ংক্রিয়ভাবে বাংলায় অনুবাদ করা হয়, নিচে মূল ইংরেজি শিরোনামও দেখানো হয়। স্বয়ংক্রিয় অনুবাদে ভুল থাকতে পারে। সামাজিক যোগাযোগমাধ্যম (Facebook, X/Twitter ইত্যাদি) থেকে কোনো খবর নেওয়া হয় না। পূর্ণ সংবাদ পড়তে শিরোনামে চাপ দিন।</div>
+<div class="foot">উৎস: প্রতিষ্ঠিত সংবাদ সংস্থা ও সংবাদমাধ্যম। বাংলা শিরোনাম Google News বাংলাদেশ, BBC বাংলা ও DW বাংলা থেকে। ইংরেজি সংবাদ BBC News, Reuters, AP, Al Jazeera, DW, The Guardian ও ESPN থেকে নিয়ে স্বয়ংক্রিয়ভাবে বাংলায় অনুবাদ করা হয়, নিচে মূল ইংরেজি শিরোনামও দেখানো হয়। স্বয়ংক্রিয় অনুবাদে ভুল থাকতে পারে। অন্য ট্যাবে সামাজিক যোগাযোগমাধ্যম (Facebook, X/Twitter ইত্যাদি) থেকে কোনো খবর নেওয়া হয় না। শুধু "গাজীপুর" ট্যাবে (কাপাসিয়া ও কালীগঞ্জ উপজেলা) সামাজিক মাধ্যমের সূত্র থেকে পাওয়া খবরও আসতে পারে, সেগুলো যাচাইহীন হতে পারে। পূর্ণ সংবাদ পড়তে শিরোনামে চাপ দিন।</div>
 
 <script>
 var BN = 'hl=bn&gl=BD&ceid=BD:bn';
@@ -81,11 +82,28 @@ var TABS = [
       { u: search('ব্যাংক বাংলাদেশ ব্যাংক when:1d'), s: '' },
       { u: 'https://feeds.bbci.co.uk/news/business/rss.xml', s: 'BBC News', l: 'en' },
       { u: searchEn('site:reuters.com business when:1d'), s: 'Reuters', l: 'en' },
-      { u: 'https://www.theguardian.com/business/rss', s: 'The Guardian', l: 'en' } ] }
+      { u: 'https://www.theguardian.com/business/rss', s: 'The Guardian', l: 'en' } ] },
+  { k: 'gazipur1', n: 'গাজীপুর', social: true, feeds: [
+      { u: search('"কাপাসিয়া" when:14d'), s: '', social: true, local: true },
+      { u: search('"কালীগঞ্জ" গাজীপুর when:14d'), s: '', social: true, local: true },
+      { u: search('কাপাসিয়া OR কালীগঞ্জ গাজীপুর উপজেলা when:14d'), s: '', social: true, local: true } ],
+    links: [
+      { n: 'Facebook: কাপাসিয়া', u: 'https://www.facebook.com/search/posts?q=' + encodeURIComponent('কাপাসিয়া') },
+      { n: 'Facebook: কালীগঞ্জ গাজীপুর', u: 'https://www.facebook.com/search/posts?q=' + encodeURIComponent('কালীগঞ্জ গাজীপুর') },
+      { n: 'X: কাপাসিয়া', u: 'https://x.com/search?f=live&q=' + encodeURIComponent('কাপাসিয়া') },
+      { n: 'X: কালীগঞ্জ গাজীপুর', u: 'https://x.com/search?f=live&q=' + encodeURIComponent('কালীগঞ্জ গাজীপুর') },
+      { n: 'YouTube: কাপাসিয়া', u: 'https://www.youtube.com/results?search_query=' + encodeURIComponent('কাপাসিয়া') },
+      { n: 'YouTube: কালীগঞ্জ গাজীপুর', u: 'https://www.youtube.com/results?search_query=' + encodeURIComponent('কালীগঞ্জ গাজীপুর') } ] }
 ];
 
 var BLOCK = /(facebook|twitter|instagram|tiktok|youtube|youtu\.be|telegram|whatsapp|reddit|pinterest|linkedin|snapchat|threads\.net|medium\.com|blogspot|wordpress|quora|ফেসবুক|টুইটার|ইউটিউব|ইনস্টাগ্রাম|টিকটক)/i;
 var BLOCK_EXACT = /^(x|x\.com|x corp)$/i;
+function localOk(o){
+  var t = String(o.title || '');
+  if(/কাপাসিয়া/.test(t)) return true;
+  if(/কালীগঞ্জ/.test(t) && /গাজীপুর/.test(t)) return true;
+  return false;
+}
 function blocked(it){
   var s = String(it.src || '').trim();
   if(BLOCK_EXACT.test(s)) return true;
@@ -184,7 +202,10 @@ function getFeed(f){
       }
       var o = { title: title, link: it.link, time: it.time, src: src || 'অজ্ঞাত সূত্র', l: f.l === 'en' ? 'en' : 'bn' };
       if(f.l === 'en' && f.s && isGN){ o.src = f.s; }
-      if(blocked(o)) continue;
+      if(f.social){
+        o.soc = BLOCK.test(String(o.src)) || BLOCK_EXACT.test(String(o.src).trim());
+        if(f.local && !localOk(o)) continue;
+      } else if(blocked(o)) continue;
       out.push(o);
     }
     out.sort(function(a, b){ return b.time - a.time; });
@@ -268,7 +289,7 @@ function loadTab(i, force){
     if(!top.length){
       if(!cached){
         document.getElementById('meta').textContent = '';
-        document.getElementById('list').innerHTML = '<div class="msg">শিরোনাম আনা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।<br><button class="btn" type="button" id="retry">আবার চেষ্টা করুন</button></div>';
+        document.getElementById('list').innerHTML = '<div class="msg">শিরোনাম আনা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।<br><button class="btn" type="button" id="retry">আবার চেষ্টা করুন</button></div>' + linksHTML();
         document.getElementById('retry').onclick = function(){ loadTab(cur, true); };
       }
       return;
@@ -301,6 +322,14 @@ function loadTab(i, force){
   });
 }
 
+function linksHTML(){
+  var t = TABS[cur];
+  if(!t || !t.links) return '';
+  var h = '<div class="msg" style="padding:16px 8px 8px"><div style="font-weight:600;color:var(--tx);margin-bottom:8px">সামাজিক মাধ্যমে সরাসরি খুঁজুন</div>';
+  for(var i = 0; i < t.links.length; i++){ h += '<a class="sl" href="' + esc(t.links[i].u) + '">' + esc(t.links[i].n) + '</a>'; }
+  return h + '</div>';
+}
+
 function showDiag(tab, all){
   var bad = [], ok = 0;
   for(var q = 0; q < tab.feeds.length; q++){
@@ -325,6 +354,7 @@ function cardHTML(it, i){
       note = ' · ইংরেজি (অনুবাদ পাওয়া যায়নি)';
     }
   }
+  if(it.soc){ note += ' · সামাজিক মাধ্যম, যাচাইহীন হতে পারে'; }
   return '<a class="card" id="c' + i + '" href="' + esc(it.link) + '">'
     + '<div class="no">' + bnNum(i + 1) + '</div>'
     + '<div class="body"><div class="hl">' + esc(main) + '</div>' + sub
@@ -335,7 +365,7 @@ function cardHTML(it, i){
 function show(items, t, old){
   var h = '';
   for(var i = 0; i < items.length; i++){ h += cardHTML(items[i], i); }
-  document.getElementById('list').innerHTML = h;
+  document.getElementById('list').innerHTML = h + linksHTML();
   document.getElementById('meta').textContent = 'সর্বশেষ হালনাগাদ: ' + clock(t) + (old ? ' (সংরক্ষিত, নতুন আনা হচ্ছে…)' : '');
 }
 
